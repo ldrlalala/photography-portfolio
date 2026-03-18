@@ -33,13 +33,3 @@ export type PhotoRow = {
   image_path: string | null;
   tags: string[] | null;
 };
-
-export type PortfolioDebugInfo = {
-  hasSupabaseEnv: boolean;
-  hasBucketEnv: boolean;
-  bucket?: string;
-  queryError?: string;
-  fetchedRowCount: number;
-  firstResolvedImageUrl?: string;
-  firstImagePath?: string;
-};

@@ -25,6 +25,7 @@ export function PhotoCard({ photo, priority = false }: PhotoCardProps) {
             alt={photo.title}
             fill
             priority={priority}
+            unoptimized
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="photoImage"
           />
