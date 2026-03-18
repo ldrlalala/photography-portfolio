@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import type { Photo, PhotoAspectRatio, PhotoRow } from "@/lib/types";
+import type { Photo, PhotoAspectRatio, PhotoRow, PortfolioDebugInfo } from "@/lib/types";
 
 const TABLE_NAME = "photos";
 
@@ -143,11 +143,18 @@ function mapPhotoRow(
 export async function getPortfolioData() {
   const client = getSupabaseClient();
   const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET;
+  const debug: PortfolioDebugInfo = {
+    hasSupabaseEnv: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+    hasBucketEnv: Boolean(bucket),
+    bucket,
+    fetchedRowCount: 0,
+  };
 
   if (!client) {
     return {
       photos: samplePhotos,
       dataSource: "sample" as const,
+      debug,
     };
   }
 
@@ -160,16 +167,29 @@ export async function getPortfolioData() {
     .order("sort_order", { ascending: true })
     .order("shot_on", { ascending: false });
 
+  if (error) {
+    debug.queryError = error.message;
+    console.error("Supabase photos query failed:", error.message);
+  }
+
+  debug.fetchedRowCount = data?.length ?? 0;
+
   if (error || !data?.length) {
     return {
       photos: samplePhotos,
       dataSource: "sample" as const,
+      debug,
     };
   }
 
+  const photos = (data as PhotoRow[]).map((row) => mapPhotoRow(row, client, bucket));
+  debug.firstImagePath = photos[0]?.imagePath;
+  debug.firstResolvedImageUrl = photos[0]?.imageUrl;
+
   return {
-    photos: (data as PhotoRow[]).map((row) => mapPhotoRow(row, client, bucket)),
+    photos,
     dataSource: "supabase" as const,
+    debug,
   };
 }
 

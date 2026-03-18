@@ -10,7 +10,7 @@ function formatShootDate(date: string) {
 }
 
 export default async function HomePage() {
-  const { photos, dataSource } = await getPortfolioData();
+  const { photos, dataSource, debug } = await getPortfolioData();
   const featuredPhotos = photos.filter((photo) => photo.featured).slice(0, 4);
   const galleryPhotos = (featuredPhotos.length ? featuredPhotos : photos).slice(0, 6);
   const series = getSeriesSummary(photos).slice(0, 4);
@@ -93,6 +93,17 @@ export default async function HomePage() {
           title="精选作品"
           description="首页默认优先展示 featured 作品；你可以在 Supabase 里按 sort_order 和 featured 自由调整排序。"
         />
+
+        <div className="debugCard">
+          <strong>当前图片读取状态</strong>
+          <p>
+            dataSource: {dataSource} | hasSupabaseEnv: {String(debug.hasSupabaseEnv)} | hasBucketEnv:{" "}
+            {String(debug.hasBucketEnv)} | bucket: {debug.bucket ?? "missing"} | rows: {debug.fetchedRowCount}
+          </p>
+          <p>first image_path: {debug.firstImagePath ?? "none"}</p>
+          <p>first image_url: {debug.firstResolvedImageUrl ?? "none"}</p>
+          {debug.queryError ? <p>query error: {debug.queryError}</p> : null}
+        </div>
 
         <div className="photoGrid">
           {galleryPhotos.map((photo, index) => (
